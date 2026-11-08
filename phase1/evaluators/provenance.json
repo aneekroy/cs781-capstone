@@ -1,0 +1,8 @@
+{
+  "source_url": "https://drive.google.com/file/d/1RgRgm_-u91IBkZVLszaEGRlRzLEwAv2f/view",
+  "folder_url": "https://drive.google.com/drive/folders/1cLQw89I1KyBotuY3kgjd1nChs-Msksj4",
+  "retrieved_utc": "2026-10-05",
+  "sha256": "3f3a9e62be718b478e3f52b378fcc535350ab90b9cb84e3a4c49fec247abf1db",
+  "modifications": "none",
+  "role": "evaluation only; pretrained scorer is never used to initialize or train Phase 1 LM"
+}

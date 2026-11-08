@@ -1,0 +1,35 @@
+{
+  "run_id": "dense_gpt_20m_s42_jupyter24gb",
+  "model": {
+    "architecture": "dense_gpt",
+    "dim": 768,
+    "layers": 12,
+    "heads": 12,
+    "kv_heads": 2,
+    "ff_dim": 2048,
+    "max_context": 2048,
+    "encoder_layers": 6,
+    "decoder_layers": 6,
+    "local_window": 256,
+    "query_chunk": 64,
+    "global_every": 4,
+    "dropout": 0.0,
+    "gradient_checkpointing": true
+  },
+  "training": {
+    "seed": 42,
+    "sequence_length": 2048,
+    "micro_batch_size": 2,
+    "gradient_accumulation": 8,
+    "token_budget": 20000000,
+    "learning_rate": 0.0003,
+    "min_lr_ratio": 0.1,
+    "warmup_fraction": 0.03,
+    "weight_decay": 0.1,
+    "grad_clip": 1.0,
+    "eval_every": 100,
+    "eval_batches": 8,
+    "source_fraction": 0.75,
+    "precision": "auto"
+  }
+}

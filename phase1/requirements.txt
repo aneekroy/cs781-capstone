@@ -1,0 +1,11 @@
+# Use CUDA-enabled torch in the Jupyter kernel. CPU torch is for offline tests only.
+torch>=2.5,<3
+numpy>=1.26,<3
+tokenizers==0.22.2
+huggingface_hub>=0.34,<2
+httpx[socks]>=0.28,<1
+ijson>=3.3,<4
+pytest>=8,<10
+# Evaluation only: the supplied official BERTScore scorer downloads its model.
+bert-score==0.3.13
+transformers>=4.38,<5
