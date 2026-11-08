@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # CS781 Phase 4 (CJPE: will the appeal be accepted?) launcher for the 2x RTX 3090 server.
 #
-# Unzip next to phase2/ and phase3/ (same folder as run_phase3.sh), then, stage by stage:
+# Lives in phase4/ of the repository; run from the repository root as bash phase4/run_phase4.sh <command>:
 #   bash run_phase4.sh fetch        # Phase_4_CJPE with your own token (same as Phases 2/3)
 #   bash run_phase4.sh stats        # sizes, label balance, lengths, test near-duplicates of train/dev
 #   bash run_phase4.sh baseline     # stage 0: TF-IDF + logistic regression (CPU, minutes)        -> B0_tfidf

@@ -67,12 +67,12 @@ ADAPT_HOURS=${ADAPT_HOURS:-10}               # wall-clock budget per backbone
 ADAPTED=$OUT/adapt
 TEST=$DATA/Test/fold3-text.json
 
-# phase2/ is used from wherever this script was unzipped; phase1/ always comes from $PROJECT.
+# The repository root (phase1/ ... phase7/) comes first on PYTHONPATH; $PROJECT supplies runs and checkpoints.
 CODE=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)   # repository root (this script lives in phase2/)
 [[ -f $CODE/phase2/run.py ]] || { echo "phase2/ not found in $CODE"; exit 1; }
 [[ -f $PROJECT/phase1/models.py ]] || { echo "phase1/ not found in PROJECT=$PROJECT (set PROJECT=...)"; exit 1; }
 export PYTHONPATH="$CODE:$PROJECT${PYTHONPATH:+:$PYTHONPATH}"
-cd "$CODE"                                   # python -m puts the cwd first: run the phase2 you unzipped
+cd "$CODE"                                   # python -m puts the cwd first: use this checkout
 mkdir -p "$OUT"
 COMMON=(--data "$DATA" --project-root "$PROJECT" --window "$WINDOW" --stride "$STRIDE"
         --batch-size "$BATCH" --epochs "$EPOCHS" --patience "$PATIENCE" --final)

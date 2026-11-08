@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # CS781 Phase 7 (Prior Case Retrieval, IL-PCR; Micro-F1@7) launcher, 2x RTX 3090.
 #
-# Unzip next to phase2/ phase3/ phase6/ (same folder as run_phase6.sh), then:
+# Lives in phase7/ of the repository; run from the repository root as bash phase7/run_phase7.sh <command>:
 #   bash run_phase7.sh fetch          # Phase_7_PCR with your own token
 #   bash run_phase7.sh stats          # queries, pools, relevant per query, lengths, self-in-pool
 #   bash run_phase7.sh lexical        # n-gram BM25 (1..5) tuned on train (CPU)                       -> B0_lexical

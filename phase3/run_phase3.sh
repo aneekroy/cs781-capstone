@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # CS781 Phase 3 (rhetorical roles, CL + IT) launcher for the 2x RTX 3090 server.
 #
-# Unzip next to phase2/ (same folder as run_phase2.sh), then:
+# Lives in phase3/ of the repository; run from the repository root as bash phase3/run_phase3.sh <command>:
 #   bash run_phase3.sh fetch      # download Phase_3_RR with your own token (same as Phase 2), or copy it to $DATA
 #   bash run_phase3.sh check      # data stats, test-id checks, dev truth files + all-Fact smoke test (official scorer)
 #   bash run_phase3.sh list       # the experiment table

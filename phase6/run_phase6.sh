@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # CS781 Phase 6 (abstractive legal summarization, IN-Abs; BERTScore-F1 primary) launcher, 2x RTX 3090.
 #
-# Unzip next to phase2/ phase3/ phase5/ (same folder as run_phase5.sh), then:
+# Lives in phase6/ of the repository; run from the repository root as bash phase6/run_phase6.sh <command>:
 #   bash run_phase6.sh fetch          # Phase_6_Summ with your own token (cs781_cache/huggingface/token)
 #   bash run_phase6.sh stats          # lengths, compression, length model, chunks per document, alignment profile
 #   bash run_phase6.sh baseline       # lead + supervised extractive (CPU) + extractor.pkl              -> B0_extractive

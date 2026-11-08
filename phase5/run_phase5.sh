@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # CS781 Phase 5 (Legal Statute Identification: which IPC statutes apply to these facts?) launcher, 2x RTX 3090.
 #
-# Unzip next to phase2/ phase3/ phase4/ (same folder as run_phase4.sh), then:
+# Lives in phase5/ of the repository; run from the repository root as bash phase5/run_phase5.sh <command>:
 #   bash run_phase5.sh fetch         # Phase_5_LSI with your own token (cs781_cache/huggingface/token)
 #   bash run_phase5.sh stats         # sizes, statute frequencies, labels/document, train/dev copies of test documents
 #   bash run_phase5.sh baseline      # TF-IDF + one-vs-rest logistic regression (CPU)                -> B0_tfidf
