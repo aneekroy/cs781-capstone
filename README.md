@@ -36,7 +36,7 @@ Ranks were recorded on 9 November 2026. **[SUBMISSIONS.md](SUBMISSIONS.md) lists
 .
 ├── README.md                ← this file: architecture, methodology, implementation and results per phase
 ├── requirements.txt
-├── phase1/                  Phase-1 LMs: models, data, training, generation, selection, submission checks
+├── phase1/  fetch_data.sh  Phase-1 LMs: data fetch, models, training, generation, selection, submission checks
 │   ├── configs/             the four architecture configs
 │   ├── evaluators/          the official Phase-1 scorer (unchanged)
 │   └── notebooks/           the Jupyter notebooks that produced the Phase-1 runs
@@ -48,7 +48,7 @@ Ranks were recorded on 9 November 2026. **[SUBMISSIONS.md](SUBMISSIONS.md) lists
 ├── phase7/  run_phase7.sh   case retrieval: n-gram BM25, Phase-1 passage retriever, re-ranker, fusion
 ├── tools/plot_curves.py    learning curves for every phase, read from the run logs (vector PDFs + LaTeX snippet)
 ├── tools/data_stats.py     corpus statistics for the report's data section (figures + LaTeX snippet)
-└── tests/                   90 unit and end-to-end tests on tiny random models (CPU)
+└── tests/                   98 unit and end-to-end tests on tiny random models (CPU)
 ```
 
 **Shared code.** Later phases reuse earlier packages:
@@ -73,9 +73,9 @@ Every launcher reads the same variables, with defaults for the original server:
 |---|---|---|
 | `PROJECT` | Phase-1 project: `runs/` holds the Phase-1 checkpoints; `runsP2/` … `runsP7/` receive the outputs | `$HOME/cs781_phase1` |
 | `CACHE` | data cache; official data is fetched to `$CACHE/raw/Phase_N_*` | `$HOME/cs781_cache` |
-| `GPU_A`, `GPU_B` | the two GPUs used for paired runs | `0`, `1` |
+| `GPU_A`, `GPU_B` | the two GPUs used for paired runs (each run uses one 24 GB GPU; we used RTX 3090s) | `0`, `1` |
 
-Data is fetched from the gated official Hugging Face dataset with **your own token**, stored at `$CACHE/huggingface/token` and never printed. For example: `bash phase3/run_phase3.sh fetch`.
+Data is fetched from the gated official Hugging Face dataset with **your own token**, stored at `$CACHE/huggingface/token` and never printed. For example: `bash phase1/fetch_data.sh` (Phase-1 corpus) or `bash phase3/run_phase3.sh fetch`.
 
 Run a launcher from the repository root (`bash phase6/run_phase6.sh <command>`) or from inside its folder. Each launcher prints its commands when called without arguments.
 
