@@ -16,8 +16,6 @@ The PEFT methods are implemented from scratch: LoRA, rsLoRA, QLoRA (NF4), AdaLoR
 
 ## Results at a glance (Codabench test set)
 
-| Phase | Task | Primary metric | Best submission | Test score |
-|---|---|---|---|---|
 | Phase | Task | Primary metric | Best submission | Test score | Rank |
 |---|---|---|---|---|---|
 | 1 | Legal LM pretraining (512-word prompt → 128-word continuation) | BERTScore-F1 | `dense_gpt` | **0.8312** | 71 |
