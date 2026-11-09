@@ -47,6 +47,7 @@ Ranks were recorded on 9 November 2026. Each phase README holds the full experim
 ├── phase6/  run_phase6.sh   summarisation: sentence-aligned chunks, masks for batched decoding, beam/MBR, KD
 ├── phase7/  run_phase7.sh   case retrieval: n-gram BM25, Phase-1 passage retriever, re-ranker, fusion
 ├── tools/plot_curves.py    learning curves for every phase, read from the run logs (vector PDFs + LaTeX snippet)
+├── tools/data_stats.py     corpus statistics for the report's data section (figures + LaTeX snippet)
 └── tests/                   90 unit and end-to-end tests on tiny random models (CPU)
 ```
 
@@ -323,6 +324,14 @@ bash phase7/run_phase7.sh combine C_final R1_ctx2 L1_dense_lorma B1_lexical_ctx
 ```
 
 ---
+
+## Corpus statistics
+
+```bash
+python tools/data_stats.py --cache $CACHE --out data      # needs matplotlib and ijson; Phase 1 is sampled
+```
+
+Writes `data/data_stats.json`, figures and `data/appendix_data.tex` (length histograms, Phase-2 span lengths and nested/adjacent spans, labelled-vs-unlabelled strings, Phase-3 role distribution by domain, Phase-5 label histogram and long tail, Phase-6 extractiveness, Phase-7 lengths and citation ages). Copy `data/` next to the report's `.tex`.
 
 ## Learning curves
 
