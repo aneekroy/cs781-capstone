@@ -5,7 +5,6 @@ usual threshold choice (phase5.data.choose_thresholds) on the averaged probabili
   python -m phase5.ensemble --data Phase_5_LSI --runs runsP5/B0_tfidf runsP5/L1 ... --output runsP5/E1
 """
 import argparse
-import json
 from pathlib import Path
 
 import numpy as np

@@ -1,7 +1,6 @@
 """Continued pretraining (phase2.adapt) on the synthetic fixture: CPU, a few steps."""
 import json, subprocess, sys
 from pathlib import Path
-import numpy as np
 import pytest
 import torch
 

@@ -11,7 +11,6 @@
   prompt   soft prompt tuning (phase2: learned input tokens)                      (Lester et al., 2021)
 """
 import math
-import re
 
 import torch
 from torch import nn

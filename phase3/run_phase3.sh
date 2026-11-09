@@ -114,7 +114,7 @@ TECH_FOLDS=${TECH_FOLDS:-$FOLDS}
 
 CODE=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)   # repository root (this script lives in phase3/)
 [[ -f $CODE/phase3/run.py && -f $CODE/phase2/model.py ]] || { echo "phase3/ and phase2/ must sit in the repository root $CODE"; exit 1; }
-[[ -f $PROJECT/phase1/models.py ]] || { echo "phase1/ not found in PROJECT=$PROJECT (set PROJECT=...)"; exit 1; }
+[[ -f $CODE/phase1/models.py || -f $PROJECT/phase1/models.py ]] || { echo "phase1/ not found in $CODE or PROJECT=$PROJECT"; exit 1; }
 export PYTHONPATH="$CODE:$PROJECT${PYTHONPATH:+:$PYTHONPATH}"
 cd "$CODE"
 mkdir -p "$OUT"

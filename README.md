@@ -125,7 +125,7 @@ Tests: `python -m pytest -q tests/`. They build a tiny fixture of all four archi
 
 The first version of this code was generated with ChatGPT, then reviewed and fixed. See [phase1/README.md](phase1/README.md).
 
-**Results.** dense 0.8312, hybrid 0.8280, gqa 0.8279, encoder–decoder 0.8216 (leader 0.8592). All four models land within 1 point of each other, so continuation quality is limited by training data, not by architecture. Training tokens consumed: dense 395M (about 3.8 per parameter), encoder–decoder 429M (but only the last quarter of each block is predicted), hybrid 78M and gqa 58M. The corpus was 256M SC and 428M HC tokens.
+**Results.** dense 0.8312, hybrid 0.8280, gqa 0.8279, encoder–decoder 0.8216 (leader 0.8689). All four models land within 1 point of each other, so continuation quality is limited by training data, not by architecture. Training tokens consumed: dense 395M (about 3.8 per parameter), encoder–decoder 429M (but only the last quarter of each block is predicted), hybrid 78M and gqa 58M. The corpus was 256M SC and 428M HC tokens.
 
 ---
 
@@ -206,6 +206,7 @@ bash phase3/run_phase3.sh screen; BEST=<backbone key from the screen report> bas
 bash phase3/run_phase3.sh round1 && bash phase3/run_phase3.sh round2 && bash phase3/run_phase3.sh kd
 bash phase3/run_phase3.sh mix && bash phase3/run_phase3.sh mix2
 bash phase3/run_phase3.sh push          # redecode + lexical member + E6/E7/E8 ensembles, vote, stack
+bash phase3/run_phase3.sh redecode && bash phase3/run_phase3.sh push   # with the speaker rule in rules=auto: E6 -> E6_div_mk2 (0.6877)
 ```
 
 ---

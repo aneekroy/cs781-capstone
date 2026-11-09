@@ -9,7 +9,6 @@ saw it. --fixed keeps every listed run.
 """
 import argparse
 import json
-from collections import Counter
 from pathlib import Path
 
 import numpy as np

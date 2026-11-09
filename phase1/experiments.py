@@ -4,7 +4,6 @@ import csv
 import json
 from pathlib import Path
 import shlex
-import subprocess
 import sys
 from .common import read_json
 from .train import resolve, check_resume

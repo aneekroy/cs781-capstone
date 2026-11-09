@@ -1,5 +1,4 @@
 """Hardware validation and batch sizing for the two-GPU Jupyter workflow."""
-from pathlib import Path
 from .scheduler import visible_gpu_ids
 
 

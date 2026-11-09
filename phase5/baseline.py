@@ -6,7 +6,6 @@ different kind of ensemble member. Statute citations are masked in this dataset,
 class_weight="balanced" per statute (rare statutes matter for Macro-F1); C chosen on dev Macro-F1 after
 thresholding; thresholds chosen with the honest split-half check (phase5.data.choose_thresholds).
 """
-import json
 import time
 from pathlib import Path
 

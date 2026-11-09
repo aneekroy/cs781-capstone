@@ -1,6 +1,5 @@
 """Measure prompt lengths and throughput; derive budgets and disk projections."""
 import argparse
-import math
 import shutil
 from pathlib import Path
 import numpy as np

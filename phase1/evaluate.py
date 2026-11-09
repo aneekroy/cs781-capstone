@@ -4,7 +4,6 @@ No pretrained BERT evaluator is downloaded here. Use the supplied official
 scorer for BERTScore; lexical scores do not reproduce the primary metric.
 """
 import argparse
-from pathlib import Path
 import math
 import torch
 from torch.nn import functional as F

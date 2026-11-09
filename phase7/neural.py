@@ -24,7 +24,6 @@ Final ranking: neural scores alone, and fused with the lexical n-gram BM25 (z-sc
 """
 import argparse
 import json
-import math
 import random
 import time
 from pathlib import Path

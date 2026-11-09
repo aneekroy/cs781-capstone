@@ -10,7 +10,6 @@ Packing: consecutive sentences are concatenated into windows of up to --window t
 model every sentence representation also sees the sentences before it in the window (no padding
 inside a window). --packing isolated encodes each sentence alone (the sentence-only ablation).
 """
-import math
 
 import torch
 from torch import nn

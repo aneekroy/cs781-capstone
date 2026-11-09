@@ -10,7 +10,6 @@ Score fusion across n: z-score each n's scores per query, weighted sum. The weig
 TRAIN queries (827) and checked on dev.
 """
 import itertools
-import math
 
 import numpy as np
 from scipy import sparse

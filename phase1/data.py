@@ -2,12 +2,10 @@
 import argparse
 import itertools
 import json
-import math
 import os
 import shutil
 import sqlite3
 from pathlib import Path
-import warnings
 import ijson
 import numpy as np
 from tokenizers import Tokenizer, decoders, models, pre_tokenizers, trainers

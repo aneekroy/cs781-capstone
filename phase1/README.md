@@ -50,7 +50,7 @@ The notebook writes every source file with `%%writefile`, so it is self-containe
 | gqa_local | 0.8279 |
 | encoder_decoder | 0.8216 |
 | first-round submissions (four models, shorter training) | 0.8168 – 0.8275 |
-| leaderboard leader (for reference) | 0.8592 |
+| leaderboard leader (for reference) | 0.8689 |
 
 ## Reproduce
 

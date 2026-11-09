@@ -5,7 +5,6 @@ The text is never normalized before tokenization, so predicted offsets index the
 exact string the evaluator uses.
 """
 import json
-import random
 from collections import Counter, defaultdict
 from pathlib import Path
 

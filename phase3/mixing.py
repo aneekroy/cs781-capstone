@@ -13,7 +13,6 @@
 4. In-domain silver data for KD (phase3.data.unlabeled_documents with select=True): Phase-1 judgments
    scored by competition-law / tax-and-banking vocabulary, tagged with that domain, teacher-labelled.
 """
-import random
 
 
 def parse_weights(spec):
