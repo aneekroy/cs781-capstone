@@ -19,7 +19,7 @@
 ## Data hygiene (done by the loader for every command)
 
 - **Repeated ids.** ILDC repeats records: exact repeats are dropped (train 37,387 -> 32,305, dev 3,505 -> 2,511). A different judgment under a repeated id is kept as `<id>#k`.
-- **Test judgments copied into train/dev are dropped.** `stats` found every test judgment duplicated in the labelled data, most likely the dev split.
+- **Test judgments copied into train/dev are dropped.** `stats` found every test judgment duplicated in the dev split (none in train); dropping them leaves 994 of the 2,511 unique dev documents.
   - A labelled copy of a test judgment would train on the test answer, or choose the epoch, threshold or ensemble members with it.
   - Train or dev documents with the same normalised text as a test judgment, or sharing >= 50% of sampled 8-grams with one, are removed.
   - `stats` prints how many were removed and how many test judgments they covered.

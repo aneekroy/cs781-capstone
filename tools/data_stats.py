@@ -318,18 +318,45 @@ def phase7(raw):
 
 
 # --------------------------------------------------------------------------- figures and LaTeX
+FIGURES = ["data_lengths", "data_p2_spans", "data_p3_roles", "data_p5_labels", "data_p7_years"]
+
+
+def captions(stats):
+    """Figure captions that describe only the data actually present."""
+    parts = [x for k, x in (("phase1", "Phase-1 SC and HC judgments"), ("phase6", "Phase-6 documents and summaries"),
+                             ("phase7", "Phase-7 queries and candidates")) if stats.get(k)]
+    p5 = stats.get("phase5") or {}
+    over = sum(v for k, v in (p5.get("labels_per_doc_hist") or {}).items() if int(k) > 15)
+    return {
+        "data_lengths": "Document lengths on a log scale: " + "; ".join(parts) + ". Phases 1 and 6 count alphabetic "
+                        "words, Phase 7 whitespace-separated words.",
+        "data_p2_spans": "Phase-2 span length (words) by label in the 70 training documents; boxes span the inter-quartile "
+                         "range, whiskers 1.5 IQR, outliers hidden. A box collapses to a line when most spans of a label "
+                         "have the same length (WIT, COURT).",
+        "data_p3_roles": "Phase-3 role distribution (share of sentences) in competition-law (CL) and income-tax (IT) "
+                         "training documents. Dissent occurs only in CL, PrecedentOverruled only three times (IT).",
+        "data_p5_labels": "Phase-5 statutes per training document (left; axis cut at 15"
+                          + (f", {over} documents have more" if over else "") + ") and training cases per statute "
+                          "by frequency rank (right, log scale).",
+        "data_p7_years": "Phase-7 age of cited cases: latest year mentioned in the query minus the latest year mentioned "
+                         "in the cited candidate (training queries). Negative values are citations whose text mentions "
+                         "a later year than the query.",
+    }
+
+
 def figures(stats, out):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     plt.rcParams.update({"font.size": 8, "axes.titlesize": 9, "legend.fontsize": 7})
     made = []
+    cap = captions(stats)
 
-    def save(fig, name, caption):
+    def save(fig, name, _caption=None):
         fig.tight_layout()
         fig.savefig(out / f"{name}.pdf", bbox_inches="tight")
         plt.close(fig)
-        made.append((name, caption))
+        made.append((name, cap[name]))
 
     p1, p6, p7 = stats.get("phase1"), stats.get("phase6"), stats.get("phase7")
     panels = [x for x in (p1, p6, p7) if x]
@@ -381,7 +408,8 @@ def figures(stats, out):
     if p5:
         fig, (a, b) = plt.subplots(1, 2, figsize=(6.5, 2.3))
         a.hist(p5["_per_doc"], bins=range(1, max(p5["_per_doc"]) + 2), align="left")
-        a.set(xlabel="statutes per document", ylabel="documents", title="Phase 5: labels per document", xlim=(0, 16))
+        a.set(xlabel="statutes per document", ylabel="documents", title="Phase 5: labels per document", xlim=(0.4, 15.6))
+        a.set_xticks(range(1, 16, 2))
         b.plot(range(1, len(p5["_ranked"]) + 1), p5["_ranked"])
         b.set(yscale="log", xlabel="statute rank", ylabel="training cases", title="Phase 5: statute frequency")
         save(fig, "data_p5_labels", "Phase-5 labels per training document and statute frequency by rank (log scale).")
@@ -405,33 +433,48 @@ def latex(stats, made, out):
     p2 = stats.get("phase2")
     if p2:
         longest = sorted(p2["span_words_mean"].items(), key=lambda x: -x[1])[:3]
-        rows.append(("2", f"{p2['mentions']} mentions in {p2['documents']} docs; nested {p2['nested']}, crossing "
-                          f"{p2['crossing']}, adjacent {p2['adjacent']}; longest spans: "
+        rows.append(("2", f"{p2['mentions']:,} mentions in {p2['documents']} training documents; nested {p2['nested']}, crossing "
+                          f"{p2['crossing']}, adjacent {p2['adjacent']}; longest mean span: "
                           + ", ".join(f"{tex_escape(l)} {v:.1f}" for l, v in longest) + " words"))
     p3 = stats.get("phase3")
     if p3:
         cl, it = p3["by_domain"]["CL"], p3["by_domain"]["IT"]
-        rows.append(("3", f"CL {cl['documents']} docs / {cl['sentences']} sentences, IT {it['documents']} / {it['sentences']}; "
-                          f"median words per sentence CL {cl['words_per_sentence']['p50']:.0f}, IT {it['words_per_sentence']['p50']:.0f}"))
+        rows.append(("3", f"CL {cl['documents']} docs / {cl['sentences']:,} sentences, IT {it['documents']} / {it['sentences']:,}; "
+                          f"median sentences per document {cl['sentences_per_doc']['p50']:.0f} (CL p90 {cl['sentences_per_doc']['p90']:.0f}, "
+                          f"IT p90 {it['sentences_per_doc']['p90']:.0f}); median words per sentence CL {cl['words_per_sentence']['p50']:.0f}, "
+                          f"IT {it['words_per_sentence']['p50']:.0f}; Dissent {cl['roles'].get('Dissent', 0)} sentences (CL) / "
+                          f"{it['roles'].get('Dissent', 0)} (IT); PrecedentOverruled {cl['roles'].get('PrecedentOverruled', 0)} / "
+                          f"{it['roles'].get('PrecedentOverruled', 0)}"))
     p4 = stats.get("phase4")
     if p4:
         tr = p4["train"]
-        rows.append(("4", f"accepted rate {tr['accepted_rate']} (train), {p4['dev']['accepted_rate']} (dev); median words "
-                          f"accepted {tr['words_accepted']['p50']:.0f}, rejected {tr['words_rejected']['p50']:.0f}"))
+        rows.append(("4", f"{tr['documents']:,} train / {p4['dev']['documents']:,} dev documents after removing repeats and "
+                          f"copies of test judgments; accepted rate {tr['accepted_rate']:.2f} (train), {p4['dev']['accepted_rate']:.2f} (dev); "
+                          f"median words (train) accepted {tr['words_accepted']['p50']:,.0f}, rejected {tr['words_rejected']['p50']:,.0f}"))
     p5 = stats.get("phase5")
     if p5:
-        rows.append(("5", f"{p5['statutes']} statutes; labels/doc median {p5['labels_per_doc']['p50']:.0f} "
-                          f"(p90 {p5['labels_per_doc']['p90']:.0f}); top-10 statutes hold {100 * p5['top10_share']:.0f}\\% of labels"))
+        hist = {int(k): v for k, v in p5["labels_per_doc_hist"].items()}
+        mean = sum(k * v for k, v in hist.items()) / max(1, sum(hist.values()))
+        sf = p5["statute_frequency"]
+        rows.append(("5", f"{p5['documents']:,} training documents, {p5['statutes']} statutes; statutes per document median "
+                          f"{p5['labels_per_doc']['p50']:.0f}, mean {mean:.2f}, p90 {p5['labels_per_doc']['p90']:.0f}, max {max(hist)}; "
+                          f"{sf['p0']:,.0f}--{sf['p100']:,.0f} training cases per statute; the 10 most frequent statutes hold "
+                          f"{100 * p5['top10_share']:.0f}\\% of all labels"))
     p6 = stats.get("phase6")
     if p6:
         nv = p6["novel_ngram_rate"]
-        rows.append(("6", f"compression median {p6['compression']['p50']:.2f}; novel summary n-grams: "
+        rows.append(("6", f"{p6['documents']:,} training pairs; median alphabetic words document {p6['document_words']['p50']:,.0f}, "
+                          f"summary {p6['summary_words']['p50']:,.0f}; compression median {p6['compression']['p50']:.2f}; "
+                          "summary n-grams absent from the document: "
                           + ", ".join(f"{k} {100 * v:.0f}\\%" for k, v in nv.items())))
     p7 = stats.get("phase7")
     if p7:
-        rows.append(("7", f"median words query {p7['query_words']['p50']:.0f}, candidate {p7['candidate_words']['p50']:.0f}; "
-                          f"cited cases are a median {p7['cited_years_before_query'].get('p50', 0):.0f} years older; "
-                          f"{100 * p7['cited_later_than_query']:.1f}\\% mention a later year than the query"))
+        rp = p7["relevant_per_query"]
+        rows.append(("7", f"{p7['queries']} training queries, pool {p7['pool']:,}; median words query {p7['query_words']['p50']:,.0f}, "
+                          f"candidate {p7['candidate_words']['p50']:,.0f}; cited cases per query median {rp['p50']:.0f} "
+                          f"(p90 {rp['p90']:.0f}); a cited case is a median {p7['cited_years_before_query'].get('p50', 0):.0f} years "
+                          f"older than its query, and {100 * p7['cited_later_than_query']:.1f}\\% of cited cases mention a later "
+                          "year than the query"))
     if rows:
         t += ["\\begin{table}[H]", "\\centering\\footnotesize", "\\caption{Corpus statistics computed by \\texttt{tools/data\\_stats.py}.}",
               "\\label{tab:a-data}", "\\begin{tabular}{@{}l>{\\raggedright\\arraybackslash}p{14.5cm}@{}}", "\\toprule",
@@ -451,13 +494,25 @@ def latex(stats, made, out):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--cache", required=True, help="the CACHE directory (holds raw/Phase_N_*)")
+    ap.add_argument("--cache", help="the CACHE directory (holds raw/Phase_N_*); not needed with --tex-only")
     ap.add_argument("--out", default="data")
     ap.add_argument("--p1-docs", type=int, default=20000, help="first N documents read per Phase-1 source")
     ap.add_argument("--p1-source", choices=["auto", "local", "stream"], default="auto",
                     help="Phase 1: local files, streaming from the Hub, or local if present else stream (default)")
     ap.add_argument("--phases", default="1,2,3,4,5,6,7")
+    ap.add_argument("--tex-only", action="store_true",
+                    help="rewrite appendix_data.tex from <out>/data_stats.json and the PDFs already in <out> (no data needed)")
     args = ap.parse_args()
+    if not args.tex_only and not args.cache:
+        ap.error("--cache is required (or use --tex-only)")
+    if args.tex_only:
+        out = Path(args.out)
+        stats = json.loads((out / "data_stats.json").read_text())
+        cap = captions(stats)
+        made = [(n, cap[n]) for n in FIGURES if (out / f"{n}.pdf").exists()]
+        latex(stats, made, out)
+        print(f"wrote {out}/appendix_data.tex from {out}/data_stats.json ({len(made)} figures)")
+        return
     raw, out = Path(args.cache) / "raw", Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     fns = {"1": lambda: phase1(raw, args.p1_docs, args.p1_source), "2": lambda: phase2(raw), "3": lambda: phase3(raw),

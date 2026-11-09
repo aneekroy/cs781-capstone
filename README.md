@@ -90,8 +90,8 @@ Tests: `python -m pytest -q tests/`. They build a tiny fixture of all four archi
    - Small labelled sets get document-level cross-validation: 2 folds in Phase 2, 5 folds in Phase 3.
    - Every tuned decision (thresholds, decoding offsets, ensemble members, post-processing rules) must also win a **half-swap check**: tune on one half, score the other, swap. Otherwise the untuned default is kept.
 3. **Leakage control.** Several official splits contain copies of test documents:
-   - Phase 4: every test judgment also appears in train/dev.
-   - Phase 5: 3,154 train and 1,045 dev documents copy test cases.
+   - Phase 4: every test judgment also appears in dev (1,517 of the 2,511 unique dev documents).
+   - Phase 5: 833 train and 407 dev documents copy test cases.
    - Phase 2: 26 of 34 test documents are inside the Phase-1 corpus.
 
    Every loader drops train/dev documents that share ≥50% of sampled 8-gram shingles with a test document. KD unlabelled text is filtered the same way.
@@ -217,7 +217,7 @@ bash phase3/run_phase3.sh redecode && bash phase3/run_phase3.sh push   # with th
 
 **Problem.** Predict whether an appeal was accepted, given the judgment without its final decision. The score is macro-F1.
 - **Data:** 32,305 training documents after removing 5,082 exact repeats; 2,511 dev documents; 1,517 test documents.
-- **Leakage:** every test judgment is near-duplicated in train/dev. Those copies are dropped from training and selection.
+- **Leakage:** every test judgment is near-duplicated in dev. Those copies are dropped from training and selection, which leaves 994 dev documents.
 
 **Architecture and methodology** (`phase4/`):
 1. **Stage 0** (`baseline`): TF-IDF over the first 300 + last 2,000 words, with logistic regression. Dev macro-F1 0.677.
@@ -237,7 +237,7 @@ bash phase3/run_phase3.sh redecode && bash phase3/run_phase3.sh push   # with th
 ## Phase 5: legal statute identification (ILSI)
 
 **Problem.** From the masked facts of a criminal case, predict every applicable IPC statute (100 labels, ~3.8 per case). The score is macro-F1.
-- **Data:** 39,596 training and 9,136 dev documents after test-copy removal; 13,019 test documents.
+- **Data:** 41,917 training and 9,774 dev documents after test-copy removal (833 and 407 copies dropped); 13,019 test documents.
 
 **Architecture** (`phase5/neural.py`). All 512-token windows of the facts are encoded by a Phase-1 backbone with PEFT. **Label-wise attention** (LAAT) follows: each statute attends to its own windows. Training uses the **asymmetric loss**. Thresholds are per statute, shrunk toward a global value, with a "min-one" rule, and are chosen with the honest split-half check.
 
