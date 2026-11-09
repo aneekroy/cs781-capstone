@@ -85,8 +85,14 @@ def main():
         raise SystemExit(f"Not in {PREFIX}Train/: {unknown}. Available: {available}")
 
     os.environ["HF_TOKEN"] = token      # this process only: resolve_official reads it from the environment
-    meta = resolve_official(args.output, sources, revision=args.revision,
-                            test_path=args.test_file, raw_dir=args.raw_dir)
+    try:
+        meta = resolve_official(args.output, sources, revision=args.revision,
+                                test_path=args.test_file, raw_dir=args.raw_dir)
+    except OSError as error:                            # the disk check runs before anything is downloaded
+        raise SystemExit(f"{error}\nNothing was downloaded. Point the download at a larger disk, e.g.\n"
+                         f"  RAW=/path/with/space/raw bash phase1/fetch_data.sh\n"
+                         f"or fetch fewer sources (--sources train_supreme_court.json is 1.3 GB). "
+                         f"tools/data_stats.py does not need this download: it streams its Phase-1 samples.")
     print(f"\ndataset commit {meta['revision']}")
     for item, path in zip(meta["files"], meta["train_paths"] + [meta["test_path"]]):
         print(f"  {item['bytes'] / 1e6:9.1f} MB  {path}")

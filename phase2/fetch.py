@@ -14,6 +14,7 @@ may belong to someone else, which gives exactly "not in the authorized list" (40
 import argparse
 import getpass
 import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -159,8 +160,20 @@ def fetch_all(output, token_file, interactive=None, only=None):
             raise SystemExit(f"no folder matches {only}; available: {available}")
     print(f"downloading: {folders}", flush=True)
     output = Path(output)
+    output.mkdir(parents=True, exist_ok=True)
+    sizes = folder_sizes(api, token)
     for folder in folders:
         print(f"== {folder}", flush=True)
+        need = sum(n for f, n in sizes.items() if f.startswith(folder + "/")
+                   and not ((output / f).is_file() and (output / f).stat().st_size == n))
+        free = shutil.disk_usage(output).free
+        if need + RESERVE > free:                      # never start a download that cannot finish
+            print(f"  SKIPPED {folder}: needs {need / 1e9:.1f} GB, only {free / 1e9:.1f} GB free under {output} "
+                  f"(keeping {RESERVE / 1e9:.0f} GB spare).\n"
+                  f"  Fetch it to a larger disk with --output, or fetch only what you need"
+                  + (" (Phase 1: bash phase1/fetch_data.sh fetches SC + HC only; tools/data_stats.py streams its "
+                     "samples and needs no download)." if folder.startswith("Phase_1") else "."), flush=True)
+            continue
         try:
             snapshot_download(REPO, repo_type="dataset", allow_patterns=[f"{folder}/*"], local_dir=output, token=token)
         except Exception as error:                     # keep going: one folder's failure should not stop the rest
@@ -171,6 +184,19 @@ def fetch_all(output, token_file, interactive=None, only=None):
             print(f"  {path.stat().st_size / 1e6 if path.is_file() else float('nan'):9.2f} MB  {path}"
                   + ("" if path.is_file() else "   MISSING"))
     return output
+
+
+RESERVE = 2 * 1024**3        # bytes left free after a folder download (logs, checkpoints, scratch)
+
+
+def folder_sizes(api, token):
+    """{repo path: bytes} for every file in the dataset (empty if the metadata call fails)."""
+    try:
+        info = api.dataset_info(REPO, files_metadata=True, token=token)
+        return {item.rfilename: item.size or 0 for item in info.siblings}
+    except Exception as error:
+        print(f"  (could not read file sizes: {type(error).__name__}; downloading without a space check)")
+        return {}
 
 
 def fetch(output, token_file, check_only=False, interactive=None, folder="Phase_2_LNER"):

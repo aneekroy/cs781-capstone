@@ -18,8 +18,13 @@ What it measures (the template's checklist for Section 3.2):
   Phase 5  labels per document (histogram), statute frequency (long tail)
   Phase 6  document vs summary length, compression, n-gram overlap with the source (extractiveness)
   Phase 7  query vs candidate length, citations per query, years of cited cases relative to the query
-A phase whose data is missing is skipped with a message. Phase 1 reads at most --p1-docs documents
-per source with a streaming parser, so it runs in minutes on the 1.3 GB files.
+A phase whose data is missing is skipped with a message.
+
+Phase 1 reads only the first --p1-docs documents of each source (SC, HC) with a streaming parser. If a
+file is not under $CACHE/raw, those documents are streamed straight from the gated dataset over HTTP
+(about 0.5 GB per source), so the 12 GB of training files never have to fit on disk. Streaming uses your
+own token: $HF_TOKEN, else $CACHE/huggingface/token (never the machine-wide ~/.cache/huggingface one).
+--p1-source local|stream|auto chooses (default auto: local file if present, else stream).
 """
 import argparse
 import json
@@ -47,30 +52,89 @@ def tex_escape(s):
 
 
 # --------------------------------------------------------------------------- Phase 1
-def stream_texts(path, limit):
+REPO = "Exploration-Lab/CS-781-Capstone"
+P1_FILES = {"SC": "Phase_1_Pretraining/Train/train_supreme_court.json",
+            "HC": "Phase_1_Pretraining/Train/train_high_courts.json"}
+
+
+def stream_texts(handle, limit):
+    """First `limit` non-empty texts of a top-level JSON list, read incrementally from a binary handle."""
     import ijson
-    with open(path, "rb") as handle:
-        for i, rec in enumerate(ijson.items(handle, "item")):
-            if i >= limit:
-                break
-            text = rec.get("text") if isinstance(rec, dict) else None
-            if isinstance(text, str) and text.strip():
-                yield text
+    for i, rec in enumerate(ijson.items(handle, "item")):
+        if i >= limit:
+            break
+        text = rec.get("text") if isinstance(rec, dict) else None
+        if isinstance(text, str) and text.strip():
+            yield text
 
 
-def phase1(raw, limit):
-    files = {"SC": raw / "Phase_1_Pretraining/Train/train_supreme_court.json",
-             "HC": raw / "Phase_1_Pretraining/Train/train_high_courts.json"}
-    if not all(p.exists() for p in files.values()):
-        return None
-    lengths, counts = {}, {}
-    for name, path in files.items():
+def own_token(token_file):
+    """$HF_TOKEN, else your own token file, else a hidden prompt. Self-contained, so this script also runs
+    as a single file outside the repository. The token is never printed."""
+    import getpass
+    import os
+    token = os.environ.get("HF_TOKEN", "").strip()
+    if token:
+        return token, "$HF_TOKEN"
+    token_file = Path(token_file)
+    if token_file.is_file() and token_file.read_text().strip():
+        return token_file.read_text().strip(), str(token_file)
+    if not sys.stdin.isatty():
+        raise RuntimeError(f"Phase 1 needs a Hugging Face token to stream: export HF_TOKEN=hf_... or save it to {token_file}")
+    token = getpass.getpass("Hugging Face READ token for the course dataset (hidden): ").strip()
+    if not token:
+        raise RuntimeError("No token entered.")
+    return token, "prompt"
+
+
+class HubStream:
+    """Opens Phase-1 files on the Hub without downloading them; resolves the token once, on first use."""
+
+    def __init__(self, cache):
+        self.cache, self.fs = Path(cache), None
+
+    def open(self, rel):
+        if self.fs is None:
+            import os
+            os.environ["HF_HOME"] = str(self.cache / "huggingface")     # never the machine-wide token
+            from huggingface_hub import HfFileSystem
+            token, source = own_token(self.cache / "huggingface" / "token")
+            print(f"phase 1: streaming from the Hub with the token from {source}")
+            self.fs = HfFileSystem(token=token)
+        return self.fs.open(f"datasets/{REPO}/{rel}", "rb", block_size=16 << 20)
+
+
+def read_source(raw, rel, limit, mode, hub):
+    """(texts, where) for one Phase-1 source: the local file if allowed and readable, else the Hub stream."""
+    local = raw / rel
+    if mode != "stream" and local.is_file():
+        try:
+            with open(local, "rb") as handle:
+                return list(stream_texts(handle, limit)), str(local)
+        except Exception as error:                      # e.g. a file truncated by a failed download
+            if mode == "local":
+                raise
+            print(f"phase 1: {local} unreadable ({type(error).__name__}), streaming instead")
+    if mode == "local":
+        return None, None
+    with hub.open(rel) as handle:
+        return list(stream_texts(handle, limit)), f"hf://datasets/{REPO}/{rel}"
+
+
+def phase1(raw, limit, mode="auto", hub=None):
+    hub = hub or HubStream(raw.parent)
+    lengths, counts, where = {}, {}, {}
+    for name, rel in P1_FILES.items():
+        texts, origin = read_source(raw, rel, limit, mode, hub)
+        if texts is None:
+            return None
         c, lens = Counter(), []
-        for text in stream_texts(path, limit):
+        for text in texts:
             words = WORD.findall(text.lower())
             lens.append(len(words))
             c.update(words)
-        lengths[name], counts[name] = lens, c
+        lengths[name], counts[name], where[name] = lens, c, origin
+        print(f"phase 1: {name} {len(lens)} documents from {origin}")
     vocab = set(counts["SC"]) | set(counts["HC"])
     tot = {k: sum(c.values()) for k, c in counts.items()}
     p = np.array([counts["SC"][w] / tot["SC"] for w in vocab])
@@ -84,7 +148,7 @@ def phase1(raw, limit):
         scores = {w: math.log((counts[a][w] + 1) / tot[a]) - math.log((counts[b][w] + 1) / tot[b])
                   for w in counts[a] if counts[a][w] >= min_count}
         return [w for w, _ in sorted(scores.items(), key=lambda x: -x[1])[:k]]
-    return {"docs_sampled": {k: len(v) for k, v in lengths.items()},
+    return {"docs_sampled": {k: len(v) for k, v in lengths.items()}, "read_from": where,
             "words_per_doc": {k: q(v) for k, v in lengths.items()},
             "js_divergence_bits": round(js, 4), "hc_tokens_unseen_in_sc": round(unseen, 4),
             "types": {k: len(c) for k, c in counts.items()},
@@ -389,12 +453,14 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--cache", required=True, help="the CACHE directory (holds raw/Phase_N_*)")
     ap.add_argument("--out", default="data")
-    ap.add_argument("--p1-docs", type=int, default=20000, help="documents sampled per Phase-1 source")
+    ap.add_argument("--p1-docs", type=int, default=20000, help="first N documents read per Phase-1 source")
+    ap.add_argument("--p1-source", choices=["auto", "local", "stream"], default="auto",
+                    help="Phase 1: local files, streaming from the Hub, or local if present else stream (default)")
     ap.add_argument("--phases", default="1,2,3,4,5,6,7")
     args = ap.parse_args()
     raw, out = Path(args.cache) / "raw", Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    fns = {"1": lambda: phase1(raw, args.p1_docs), "2": lambda: phase2(raw), "3": lambda: phase3(raw),
+    fns = {"1": lambda: phase1(raw, args.p1_docs, args.p1_source), "2": lambda: phase2(raw), "3": lambda: phase3(raw),
            "4": lambda: phase4(raw), "5": lambda: phase5(raw), "6": lambda: phase6(raw), "7": lambda: phase7(raw)}
     stats = {}
     for n in args.phases.split(","):

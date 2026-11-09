@@ -154,3 +154,25 @@ def test_phase1_fetch_all_and_check_only(tmp_path, monkeypatch):
     assert run_p1(monkeypatch, tmp_path / "c", "--check-only") == []
     with pytest.raises(SystemExit, match="Not in"):
         run_p1(monkeypatch, tmp_path / "d", "--sources", "train_missing.json")
+
+
+def test_fetch_all_skips_folder_that_does_not_fit(tmp_path, monkeypatch, capsys):
+    class Api(FakeP1Api):
+        def list_repo_files(self, repo, repo_type, token):
+            return self.FILES
+
+        def dataset_info(self, repo, files_metadata, token):
+            class Item:
+                def __init__(self, name):
+                    self.rfilename = name
+                    self.size = 10**15 if name.startswith("Phase_1") else 10      # Phase 1 cannot fit anywhere
+            class Info: pass
+            info = Info(); info.siblings = [Item(f) for f in self.FILES]
+            return info
+    pulled = []
+    monkeypatch.setattr(huggingface_hub, "HfApi", Api)
+    monkeypatch.setattr(huggingface_hub, "snapshot_download", lambda repo, **kw: pulled.append(kw["allow_patterns"][0]))
+    monkeypatch.setenv("HF_TOKEN", "hf_env_token_0000")
+    F.fetch_all(tmp_path, tmp_path / "token", interactive=False)
+    out = capsys.readouterr().out
+    assert pulled == ["Phase_2_LNER/*"] and "SKIPPED Phase_1_Pretraining" in out and "data_stats.py streams" in out
