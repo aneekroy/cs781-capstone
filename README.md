@@ -8,7 +8,7 @@ This repository holds the code for all seven phases of the capstone:
 - four ~100M-parameter language models trained **from random initialisation** on official Indian legal text (Phase 1);
 - their adaptation to six downstream legal tasks (Phases 2–7): named-entity recognition, rhetorical-role labelling, judgment prediction, statute identification, summarisation and prior-case retrieval.
 
-Every downstream experiment starts from the Phase-1 checkpoints. No outside pretrained model, LLM or external dataset is used for training or inference.
+Every neural model in Phases 2–7 starts from the Phase-1 checkpoints. The best Phase-5 and Phase-7 submissions are lexical baselines (TF-IDF, BM25) that scored above the neural runs. No outside pretrained model, LLM or external dataset is used for training or inference.
 
 The PEFT methods are implemented from scratch: LoRA, rsLoRA, QLoRA (NF4), AdaLoRA, LoRMA, IA³, prefix, prompt and adapters. So are knowledge distillation, CRF tagging, beam search, BM25, the ensembles and the decoders.
 
@@ -26,7 +26,7 @@ The PEFT methods are implemented from scratch: LoRA, rsLoRA, QLoRA (NF4), AdaLoR
 | 6 | Abstractive summarisation (IN-Abs) | BERTScore-F1 | `C9_dense_full_c512_e5` | **0.8533** | 11 |
 | 7 | Prior-case retrieval (IL-PCR) | micro-F1@7 | `B1_lexical_ctx`; Phase-1 retriever fused: `R1_ctx2` 0.4371 | **0.4400** | 40 |
 
-Ranks were recorded on 9 November 2026. Each phase README holds the full experiment tables, including the runs that failed.
+Ranks were recorded on 9 November 2026. **[SUBMISSIONS.md](SUBMISSIONS.md) lists every individual Codabench submission** (214 valid submissions over the seven phases) with what it was, its test score and the command that rebuilds it. Each phase README holds the full experiment tables, including the runs that failed.
 
 ---
 
