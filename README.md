@@ -46,6 +46,7 @@ Ranks were recorded on 9 November 2026. Each phase README holds the full experim
 ├── phase5/  run_phase5.sh   statute identification: windows + label-wise attention + ASL + per-statute thresholds
 ├── phase6/  run_phase6.sh   summarisation: sentence-aligned chunks, masks for batched decoding, beam/MBR, KD
 ├── phase7/  run_phase7.sh   case retrieval: n-gram BM25, Phase-1 passage retriever, re-ranker, fusion
+├── tools/plot_curves.py    learning curves for every phase, read from the run logs (vector PDFs + LaTeX snippet)
 └── tests/                   90 unit and end-to-end tests on tiny random models (CPU)
 ```
 
@@ -322,6 +323,16 @@ bash phase7/run_phase7.sh combine C_final R1_ctx2 L1_dense_lorma B1_lexical_ctx
 ```
 
 ---
+
+## Learning curves
+
+Every run already logs its curves (Phase 1 `metrics.jsonl`, DAPT `adapt_metrics.jsonl`, task runs `cv_summary.json` / `summary.json`). To draw them:
+
+```bash
+python tools/plot_curves.py --project $PROJECT --out curves      # needs matplotlib
+```
+
+This writes `curves/phase*_curves.pdf`, `curves/dapt_curves.pdf` and `curves/appendix_curves.tex`; copy the `curves/` folder next to the report's `.tex` and the appendix includes them. Use `--p2 RUN ...` (and `--p1`, `--dapt`, `--p3` … `--p7`) to choose other runs.
 
 ## Testing
 

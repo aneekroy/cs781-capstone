@@ -13,3 +13,4 @@ bert-score==0.3.13
 transformers>=4.38,<5
 rouge-score>=0.1.2           # optional: Phase 6 falls back to its own ROUGE implementation
 # optional speed-up: flash-attn 2.7.x prebuilt wheel matching torch / CUDA / cxx11abi (SDPA fallback otherwise)
+matplotlib>=3.7          # tools/plot_curves.py only
