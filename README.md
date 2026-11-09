@@ -89,7 +89,7 @@ Tests: `python -m pytest -q tests/`. They build a tiny fixture of all four archi
    - Every tuned decision (thresholds, decoding offsets, ensemble members, post-processing rules) must also win a **half-swap check**: tune on one half, score the other, swap. Otherwise the untuned default is kept.
 3. **Leakage control.** Several official splits contain copies of test documents:
    - Phase 4: every test judgment also appears in train/dev.
-   - Phase 5: 833 train and 407 dev documents copy test cases.
+   - Phase 5: 3,154 train and 1,045 dev documents copy test cases.
    - Phase 2: 26 of 34 test documents are inside the Phase-1 corpus.
 
    Every loader drops train/dev documents that share ≥50% of sampled 8-gram shingles with a test document. KD unlabelled text is filtered the same way.
@@ -125,7 +125,7 @@ Tests: `python -m pytest -q tests/`. They build a tiny fixture of all four archi
 
 The first version of this code was generated with ChatGPT, then reviewed and fixed. See [phase1/README.md](phase1/README.md).
 
-**Results.** dense 0.8312, hybrid 0.8280, gqa 0.8279, encoder–decoder 0.8216 (leader 0.8592). All four models land within 1 point of each other; continuation quality is limited by training tokens, not by architecture. The dense model saw the most tokens (~3.8 per parameter) and scored best.
+**Results.** dense 0.8312, hybrid 0.8280, gqa 0.8279, encoder–decoder 0.8216 (leader 0.8592). All four models land within 1 point of each other, so continuation quality is limited by training data, not by architecture. Training tokens consumed: dense 395M (about 3.8 per parameter), encoder–decoder 429M (but only the last quarter of each block is predicted), hybrid 78M and gqa 58M. The corpus was 256M SC and 428M HC tokens.
 
 ---
 
@@ -234,7 +234,7 @@ bash phase3/run_phase3.sh push          # redecode + lexical member + E6/E7/E8 e
 ## Phase 5: legal statute identification (ILSI)
 
 **Problem.** From the masked facts of a criminal case, predict every applicable IPC statute (100 labels, ~3.8 per case). The score is macro-F1.
-- **Data:** 41,917 training and 9,774 dev documents after test-copy removal; 13,019 test documents.
+- **Data:** 39,596 training and 9,136 dev documents after test-copy removal; 13,019 test documents.
 
 **Architecture** (`phase5/neural.py`). All 512-token windows of the facts are encoded by a Phase-1 backbone with PEFT. **Label-wise attention** (LAAT) follows: each statute attends to its own windows. Training uses the **asymmetric loss**. Thresholds are per statute, shrunk toward a global value, with a "min-one" rule, and are chosen with the honest split-half check.
 
