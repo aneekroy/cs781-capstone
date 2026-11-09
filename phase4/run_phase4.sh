@@ -49,6 +49,7 @@ BEST=${BEST:-F1_densedapt_lorma}
 TEACHER=${TEACHER:-$OUT/F1_densedapt_lorma}
 
 CODE=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)   # repository root (this script lives in phase4/)
+SELF="$CODE/phase4/run_phase4.sh"                 # absolute path of this launcher (it cds to $CODE below)
 [[ -f $CODE/phase4/run.py && -f $CODE/phase3/model.py ]] || { echo "phase4/, phase3/, phase2/ must sit in the repository root $CODE"; exit 1; }
 export PYTHONPATH="$CODE:$PROJECT${PYTHONPATH:+:$PYTHONPATH}"
 cd "$CODE"
@@ -145,5 +146,5 @@ EOF
     done
     echo "-> $OUT/submissions/" ;;
   check)     $PY -m phase4.run check --data "$DATA" --prediction "$2" ;;
-  *) sed -n '2,17p' "$0" ;;
+  *) sed -n '2,17p' "$SELF" ;;
 esac

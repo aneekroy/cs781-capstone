@@ -58,6 +58,7 @@ FIRST=${FIRST:-$OUT/C_all}                 # first stage of the re-rankers (a re
 LEX=$OUT/${LEXRUN:-B0_lexical}             # lexical configuration every neural run uses (B1/B2 once they win)
 
 CODE=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)   # repository root (this script lives in phase7/)
+SELF="$CODE/phase7/run_phase7.sh"                 # absolute path of this launcher (it cds to $CODE below)
 [[ -f $CODE/phase7/run.py && -f $CODE/phase6/model.py && -f $CODE/phase3/peft.py ]] || { echo "phase7/, phase6/, phase3/, phase2/ must sit in the repository root $CODE"; exit 1; }
 export PYTHONPATH="$CODE:$PROJECT${PYTHONPATH:+:$PYTHONPATH}"
 cd "$CODE"
@@ -177,7 +178,7 @@ case "${1:-}" in
   lexical-passage)   # + best-passage BM25 (150/300-token passages) and longer n-grams (6, 8, 10), with citation contexts
     $PY -m phase7.run lexical --data "$DATA" --output "$OUT/B4_lexical_passage" --grams 1 2 3 4 5 6 8 10 \
       --context-windows 1 2 3 5 8 --passage-words 150 300 2>&1 | tee "$OUT/B4_lexical_passage.log" ;;
-  lexical-all)       bash "$0" lexical-context; bash "$0" lexical-prf; bash "$0" lexical-dev; bash "$0" lexical-passage ;;
+  lexical-all)       bash "$SELF" lexical-context; bash "$SELF" lexical-prf; bash "$SELF" lexical-dev; bash "$SELF" lexical-passage ;;
   context)    pair R1_ctx1 R1_ctx2 ;;
   round2)     one R2_round2 "$GPU_A" ;;
   knobs)      queue R3_pairs6 R4_minsim05 R5_tau02 R6_tau10 R7_ep8 R8_top4 R9_top16 ;;
@@ -237,5 +238,5 @@ EOF
       [[ -f $d/submission_neural/submission.zip ]] && cp "$d/submission_neural/submission.zip" "$OUT/submissions/submission_${n}_neural.zip" && echo "submission_${n}_neural.zip"
     done; echo "-> $OUT/submissions/" ;;
   check)      $PY -m phase7.run check --data "$DATA" --prediction "$2" ;;
-  *) sed -n '2,25p' "$0" ;;
+  *) sed -n '2,25p' "$SELF" ;;
 esac

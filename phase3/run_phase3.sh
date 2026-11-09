@@ -113,6 +113,7 @@ SCREEN_FOLDS=${SCREEN_FOLDS:-3}
 TECH_FOLDS=${TECH_FOLDS:-$FOLDS}
 
 CODE=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)   # repository root (this script lives in phase3/)
+SELF="$CODE/phase3/run_phase3.sh"                 # absolute path of this launcher (it cds to $CODE below)
 [[ -f $CODE/phase3/run.py && -f $CODE/phase2/model.py ]] || { echo "phase3/ and phase2/ must sit in the repository root $CODE"; exit 1; }
 [[ -f $CODE/phase1/models.py || -f $PROJECT/phase1/models.py ]] || { echo "phase1/ not found in $CODE or PROJECT=$PROJECT"; exit 1; }
 export PYTHONPATH="$CODE:$PROJECT${PYTHONPATH:+:$PYTHONPATH}"
@@ -333,7 +334,7 @@ PYEOF
     ( for n in ${a[@]+"${a[@]}"}; do fin "$GPU_A" "$n"; done ) & pa=$!
     ( for n in ${b[@]+"${b[@]}"}; do fin "$GPU_B" "$n"; done ) & pb=$!
     wait $pa; wait $pb
-    bash "$0" collect ;;
+    bash "$SELF" collect ;;
   collect)     # every run's submission.zip, renamed by run, in one folder for upload
     mkdir -p "$OUT/submissions"
     for z in "$OUT"/*/submission/submission.zip; do
@@ -363,15 +364,15 @@ PYEOF
   lexical)     # TF-IDF + logreg member (CPU, ~10-20 min): lexical errors for the ensembles -> L1_tfidf
     $PY -m phase3.lexical --data "$DATA" --output "$OUT/L1_tfidf" 2>&1 | tee "$OUT/L1_tfidf.log" | grep -E "^fold|^OOF|honest" ;;
   push)        # leaderboard push on finished runs (CPU): Dissent fix everywhere, then sequence-decoded ensembles
-    bash "$0" redecode
-    [[ -f $OUT/L1_tfidf/oof.pt ]] || bash "$0" lexical || true
+    bash "$SELF" redecode
+    [[ -f $OUT/L1_tfidf/oof.pt ]] || bash "$SELF" lexical || true
     DIV=${DIV:-"M4_gqa_dapt_lora_kd_mix M3_dense_lorma_rare_mix K2_gqa_lora_kd S_p2_x1 T_ia3 S_hybrid_dapt P5_p2ner_lorma T_lorma P7_dense_lorma_wce"}
-    ENS_NAME=E6_div_seq ENS_ARGS=--fixed ENS_RUNS="$DIV" bash "$0" ensemble 2>&1 | tee "$OUT/E6_div_seq.log" | grep -E "sequence|ensemble of|submission"
-    ENS_NAME=E7_greedy_seq ENS_ARGS="--max-members 9" bash "$0" ensemble 2>&1 | tee "$OUT/E7_greedy_seq.log" | grep -E "^start|^\+|sequence|ensemble of|submission"
-    ENS_NAME=E8_div_lex ENS_ARGS=--fixed ENS_RUNS="$DIV L1_tfidf" bash "$0" ensemble 2>&1 | tee "$OUT/E8_div_lex.log" | grep -E "sequence|ensemble of|submission"
-    VOTE_NAME=V6_div VOTE_ARGS=--fixed VOTE_RUNS="$DIV" bash "$0" vote | tail -2
-    STACK_NAME=ST3_div STACK_RUNS="$DIV L1_tfidf" bash "$0" stack | tail -4
-    bash "$0" collect | grep -E "E6|E7|E8|V6|ST3|M4|E2" ;;
+    ENS_NAME=E6_div_seq ENS_ARGS=--fixed ENS_RUNS="$DIV" bash "$SELF" ensemble 2>&1 | tee "$OUT/E6_div_seq.log" | grep -E "sequence|ensemble of|submission"
+    ENS_NAME=E7_greedy_seq ENS_ARGS="--max-members 9" bash "$SELF" ensemble 2>&1 | tee "$OUT/E7_greedy_seq.log" | grep -E "^start|^\+|sequence|ensemble of|submission"
+    ENS_NAME=E8_div_lex ENS_ARGS=--fixed ENS_RUNS="$DIV L1_tfidf" bash "$SELF" ensemble 2>&1 | tee "$OUT/E8_div_lex.log" | grep -E "sequence|ensemble of|submission"
+    VOTE_NAME=V6_div VOTE_ARGS=--fixed VOTE_RUNS="$DIV" bash "$SELF" vote | tail -2
+    STACK_NAME=ST3_div STACK_RUNS="$DIV L1_tfidf" bash "$SELF" stack | tail -4
+    bash "$SELF" collect | grep -E "E6|E7|E8|V6|ST3|M4|E2" ;;
   ensemble)
     name=${ENS_NAME:-E1_ensemble}
     runs=(); for d in "$OUT"/*/; do n=$(basename "$d"); [[ -f $d/oof.pt && $n != E* && $n != V* ]] && runs+=("$d"); done
@@ -397,5 +398,5 @@ for honest, name, plain, tuned, dev, dom, dec, ep, sub in sorted(rows, reverse=T
           f"{dom['CL']:6.4f} {dom['IT']:6.4f}  {dec:17s} {ep}  {'yes' if sub else '-'}")
 EOF
     ;;
-  *) sed -n '2,20p' "$0" ;;
+  *) sed -n '2,20p' "$SELF" ;;
 esac

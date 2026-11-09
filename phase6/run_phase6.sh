@@ -64,6 +64,7 @@ EXTRACTOR=$OUT/B0_extractive/extractor.pkl
 BERT=(); [[ ${NO_BERTSCORE:-0} == 1 ]] && BERT=(--no-bertscore)
 
 CODE=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)   # repository root (this script lives in phase6/)
+SELF="$CODE/phase6/run_phase6.sh"                 # absolute path of this launcher (it cds to $CODE below)
 [[ -f $CODE/phase6/run.py && -f $CODE/phase3/model.py ]] || { echo "phase6/, phase3/, phase2/ must sit in the repository root $CODE"; exit 1; }
 export PYTHONPATH="$CODE:$PROJECT${PYTHONPATH:+:$PYTHONPATH}"
 cd "$CODE"
@@ -187,8 +188,8 @@ case "${1:-}" in
       || { echo "FAILED: $name"; tail -15 "$OUT/$name.log"; exit 1; }
     grep -h '^{"dev"' "$OUT/$name.log" | tail -1 | cut -c1-240 ;;
   ensembles)  # same-architecture ensembles (each still one Phase-1 model family)
-    GPU=$GPU_A bash "$0" ens E_dense C3_dense_full_c512 C1_dense_lorma_c512 L1_dense_lorma &
-    GPU=$GPU_B bash "$0" ens E_gqa C2_gqa_full_c512 A_chunk512 T_full &
+    GPU=$GPU_A bash "$SELF" ens E_dense C3_dense_full_c512 C1_dense_lorma_c512 L1_dense_lorma &
+    GPU=$GPU_B bash "$SELF" ens E_gqa C2_gqa_full_c512 A_chunk512 T_full &
     wait ;;
   ablations)  queue A_head A_extract A_overlap A_align_pos A_chunk512 A_srclm A_scratch A_nodapt ;;
   seeds)      pair "${S1:-L2_gqa_lorma}_s7" "${S2:-L2_gqa_lorma}_s13" ;;
@@ -238,5 +239,5 @@ EOF
     done
     echo "-> $OUT/submissions/" ;;
   check)      $PY -m phase6.run check --data "$DATA" --prediction "$2" ;;
-  *) sed -n '2,25p' "$0" ;;
+  *) sed -n '2,25p' "$SELF" ;;
 esac

@@ -69,6 +69,7 @@ TEST=$DATA/Test/fold3-text.json
 
 # The repository root (phase1/ ... phase7/) comes first on PYTHONPATH; $PROJECT supplies runs and checkpoints.
 CODE=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)   # repository root (this script lives in phase2/)
+SELF="$CODE/phase2/run_phase2.sh"                 # absolute path of this launcher (it cds to $CODE below)
 [[ -f $CODE/phase2/run.py ]] || { echo "phase2/ not found in $CODE"; exit 1; }
 [[ -f $CODE/phase1/models.py || -f $PROJECT/phase1/models.py ]] || { echo "phase1/ not found in $CODE or PROJECT=$PROJECT"; exit 1; }
 export PYTHONPATH="$CODE:$PROJECT${PYTHONPATH:+:$PYTHONPATH}"
@@ -219,7 +220,7 @@ case "${1:-}" in
     ;;
 
   one)      # bash run_phase2.sh one <experiment> [gpu]
-    [[ -n ${2:-} ]] || { echo "usage: $0 one <experiment> [gpu]"; experiments; exit 1; }
+    [[ -n ${2:-} ]] || { echo "usage: $SELF one <experiment> [gpu]"; experiments; exit 1; }
     one "$2" "${3:-$GPU_A}"
     ;;
 
@@ -313,12 +314,12 @@ case "${1:-}" in
     ;;
 
   repost)     # re-choose post-processing with the current rules for finished runs (CPU): repost RUN [RUN ...]
-    [[ -n ${2:-} ]] || { echo "usage: $0 repost <run> [run ...]"; exit 1; }
+    [[ -n ${2:-} ]] || { echo "usage: $SELF repost <run> [run ...]"; exit 1; }
     for r in "${@:2}"; do $PY -m phase2.repost --data "$DATA" --run "$OUT/$r" ${REPOST_ARGS:-}; done
     ;;
 
   errors)     # real out-of-fold errors with context: errors RUN [LABEL ...]   (training text only)
-    [[ -n ${2:-} ]] || { echo "usage: $0 errors <run> [label ...]"; exit 1; }
+    [[ -n ${2:-} ]] || { echo "usage: $SELF errors <run> [label ...]"; exit 1; }
     labs=("${@:3}"); [[ ${#labs[@]} -gt 0 ]] || labs=(APP RESP WIT)
     $PY -m phase2.errors --data "$DATA" --run "$OUT/$2" --labels "${labs[@]}" --n "${N:-12}"
     ;;
@@ -345,5 +346,5 @@ for r in sorted(rows, key=lambda r: -(r[2] or r[1])):
 EOF
     ;;
 
-  *) sed -n '2,/^# Every knob/p' "$0"; exit 1;;
+  *) sed -n '2,/^# Every knob/p' "$SELF"; exit 1;;
 esac

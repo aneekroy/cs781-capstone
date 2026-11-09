@@ -51,6 +51,7 @@ BEST=${BEST:-gqa}                        # backbone for the technique comparison
 TEACHER=${TEACHER:-$OUT/L1_dense_lorma}
 
 CODE=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)   # repository root (this script lives in phase5/)
+SELF="$CODE/phase5/run_phase5.sh"                 # absolute path of this launcher (it cds to $CODE below)
 [[ -f $CODE/phase5/run.py && -f $CODE/phase3/model.py ]] || { echo "phase5/, phase3/, phase2/ must sit in the repository root $CODE"; exit 1; }
 export PYTHONPATH="$CODE:$PROJECT${PYTHONPATH:+:$PYTHONPATH}"
 cd "$CODE"
@@ -168,5 +169,5 @@ EOF
   fetch-all)
     export HF_HOME=$CACHE/huggingface
     $PY -m phase2.fetch --output "$CACHE/raw" --token-file "${HF_TOKEN_FILE:-$CACHE/huggingface/token}" --all "${@:2}" ;;
-  *) sed -n '2,15p' "$0" ;;
+  *) sed -n '2,15p' "$SELF" ;;
 esac
