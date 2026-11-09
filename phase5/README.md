@@ -4,7 +4,7 @@
 >
 > **Recorded:** the CPU baselines S1–S4 (TF-IDF logistic / modified-Huber SVM / kNN / their mean). Best is S4, dev macro-F1 0.404.
 >
-> **Neural runs and test scores:** TBD (fill in from Codabench).
+> **Test scores:** S4 TF-IDF average **0.3968** (submitted best), S1 logistic 0.3908, S2 SVM 0.3844, S3 kNN 0.3459; neural label-attention LoRMA models L1 dense 0.3576, L2 gqa 0.3517, enc-dec 0.2977 (not tuned further before the deadline).
 
 
 **The task.** Given the **facts** of a criminal case, predict every applicable IPC statute (100 statutes, about 3.8 per case).

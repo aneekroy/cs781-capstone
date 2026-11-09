@@ -2,7 +2,7 @@
 
 > **Run from the repository root** as `bash phase3/run_phase3.sh <command>`, or from inside `phase3/`. The official scorer is `phase3/evaluate_phase3.py`.
 >
-> **Best submission:** `E8_div_lex`, test pooled macro-F1 **0.6397** (P 0.660, R 0.636). It is a fixed diverse set of 9 taggers plus the TF-IDF member (`L1_tfidf`), averaged, sequence-decoded, with the Dissent rule (`bash phase3/run_phase3.sh push`).
+> **Best submission:** `E6_div_mk2`, test pooled macro-F1 **0.6877** (P 0.689, R 0.692), first on the leaderboard: the fixed diverse ensemble (`E6_div_seq`) re-decoded with the Dissent and speaker rules. E9_div_lex (E6 members + TF-IDF member, both rules) scored 0.6846; E8_div_lex without the speaker rule 0.6397.
 >
 > **Other test results:**
 > - v6_diverse 0.6339

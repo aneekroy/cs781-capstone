@@ -18,15 +18,17 @@ The PEFT methods are implemented from scratch: LoRA, rsLoRA, QLoRA (NF4), AdaLoR
 
 | Phase | Task | Primary metric | Best submission | Test score |
 |---|---|---|---|---|
-| 1 | Legal LM pretraining (512-word prompt → 128-word continuation) | BERTScore-F1 | `dense_gpt` | **0.8312** |
-| 2 | Legal NER (12 entity types, character spans) | strict macro-F1 | `V24_all` (CV-selected span vote of 5 taggers) | **0.6626** |
-| 3 | Rhetorical-role prediction (13 roles, CL + IT domains) | pooled macro-F1 | `E8_div_lex` (posterior average of 9 taggers + TF-IDF member, sequence decoding) | **0.6397** |
-| 4 | Court judgment prediction (ILDC, binary) | macro-F1 | see [phase4/README.md](phase4/README.md) | dev 0.7464 (F3, LoRA); test: TBD |
-| 5 | Legal statute identification (100 IPC statutes, multi-label) | macro-F1 | see [phase5/README.md](phase5/README.md) | TBD |
-| 6 | Abstractive summarisation (IN-Abs) | BERTScore-F1 | `C9_dense_full_c512_e5` | **0.8533** |
-| 7 | Prior-case retrieval (IL-PCR) | micro-F1@7 | `B1_lexical_ctx`; Phase-1 retriever fused: `R1_ctx2` 0.4371 | **0.4400** |
+| Phase | Task | Primary metric | Best submission | Test score | Rank |
+|---|---|---|---|---|---|
+| 1 | Legal LM pretraining (512-word prompt → 128-word continuation) | BERTScore-F1 | `dense_gpt` | **0.8312** | 71 |
+| 2 | Legal NER (12 entity types, character spans) | strict macro-F1 | `V24_all` (CV-selected span vote of 5 taggers) | **0.6626** | 5 |
+| 3 | Rhetorical-role prediction (13 roles, CL + IT domains) | pooled macro-F1 | `E6_div_mk2` (diverse tagger ensemble, sequence decoding, Dissent + speaker rules) | **0.6877** | **1** |
+| 4 | Court judgment prediction (ILDC, binary) | macro-F1 | `F3_densedapt_lora` | **0.7507** | 47 |
+| 5 | Legal statute identification (100 IPC statutes, multi-label) | macro-F1 | `S4_ensemble` (TF-IDF baselines averaged; neural runs scored lower) | **0.3968** | 41 |
+| 6 | Abstractive summarisation (IN-Abs) | BERTScore-F1 | `C9_dense_full_c512_e5` | **0.8533** | 11 |
+| 7 | Prior-case retrieval (IL-PCR) | micro-F1@7 | `B1_lexical_ctx`; Phase-1 retriever fused: `R1_ctx2` 0.4371 | **0.4400** | 40 |
 
-TBD values were not recorded when this README was written. Each phase README holds the full experiment tables, including the runs that failed.
+Ranks were recorded on 9 November 2026. Each phase README holds the full experiment tables, including the runs that failed.
 
 ---
 
@@ -199,7 +201,7 @@ VOTE_NAME=V24_all VOTE_ARGS="--no-extras --no-rerank --no-per-label" bash phase2
 - Initialising from the Phase-2 NER model helped (0.571).
 - On test, single runs vary by ±4 points. Ensembles are steadier.
 
-**Best submission: `E8_div_lex`, test 0.6397 (P 0.660, R 0.636).** It is a fixed diverse set of 9 taggers plus the TF-IDF member, combined with posterior averaging, sequence decoding and the Dissent rule.
+**Best submission: `E6_div_mk2`, test 0.6877 (P 0.689, R 0.692), first on the leaderboard.** It is a fixed diverse set of taggers combined with posterior averaging and sequence decoding, followed by the Dissent rule and the speaker-tracking rule. The speaker rule fixes a 56-sentence block of respondent arguments that every model labelled as petitioner arguments, inside one test judgment that holds 43% of the test sentences; it added 4–5 points (E8 0.640 → E9 0.685, R1B 0.627 → 0.670).
 
 ```bash
 bash phase3/run_phase3.sh screen; BEST=<backbone key from the screen report> bash phase3/run_phase3.sh techniques
@@ -227,7 +229,7 @@ bash phase3/run_phase3.sh push          # redecode + lexical member + E6/E7/E8 e
 3. **Stage 2/3** (`aggregate.py`): cached window embeddings of the last 8 windows, then a BiGRU + attention aggregator averaged over 5 seeds. This is the hierarchical design that was strongest in the ILDC paper.
 4. **Stage 4** (`ensemble.py`): a probability average or majority vote, with members and the decision threshold chosen on dev under the half-swap check.
 
-**Best submission:** TBD (test scores not recorded here). Details in [phase4/README.md](phase4/README.md).
+**Best submission: `F3_densedapt_lora`, test 0.7507.** Other test scores: dev-selected ensemble E1 0.744, AdaLoRA 0.732, TF-IDF 0.669, gqa KD student 0.666, Phase-2 init LoRMA 0.620, dense LoRMA 0.608, BiGRU aggregators 0.620–0.621, gqa/enc-dec LoRMA 0.523/0.518, rsLoRA (r16) 0.464. Details in [phase4/README.md](phase4/README.md).
 
 ---
 
@@ -246,7 +248,7 @@ bash phase3/run_phase3.sh push          # redecode + lexical member + E6/E7/E8 e
 - Pooling, loss, section and rare-statute ablations.
 - A greedy probability-averaging ensemble.
 
-**Best submission:** TBD. Details in [phase5/README.md](phase5/README.md).
+**Best submission: `S4_ensemble` (average of the TF-IDF baselines), test 0.3968.** The neural label-attention models scored lower within the phase deadline: dense 0.358, gqa 0.352, enc-dec 0.298. Details in [phase5/README.md](phase5/README.md).
 
 ---
 
@@ -312,7 +314,7 @@ bash phase6/run_phase6.sh longer        # C8_dense_lorma_c512_e5 || C9_dense_ful
 - Citation-context queries were the best lexical change (0.440 test).
 - Phase-1 retrievers alone reach 0.31–0.36. Fused with BM25 they reach 0.437, close to but not above lexical-only.
 
-**Best submission: `B1_lexical_ctx`, test 0.4400.** The best Phase-1 model is R1_ctx2 (fused), at 0.4371. Final fusion results are TBD.
+**Best submission: `B1_lexical_ctx`, test 0.4400.** The best Phase-1 model is R1_ctx2 (fused), at 0.4371. The pool-level fusion runs (prior, kNN, hubness), B4 and the re-ranker were built but not submitted before the deadline.
 
 ```bash
 bash phase7/run_phase7.sh lexical-context                         # B1

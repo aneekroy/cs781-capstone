@@ -8,7 +8,7 @@
 > - fused with BM25: R1_ctx2 0.4371; A_chunk400 / A_bidir 0.4312; L1 0.4253
 > - alone: 0.31–0.36 (best A_neg_random 0.3615)
 >
-> **Later fusion runs** (combine with prior / kNN / hubness, B4, re-ranker): TBD.
+> **Also on test:** zero-shot Phase-1 encoders fused with BM25 0.419–0.421 (neural only 0.309–0.320); technique runs T_full / T_partial / T_qlora fused 0.431 / 0.425 / 0.423. The pool-level fusion runs, B4 and the re-ranker were not submitted before the deadline.
 
 
 **The task.** For each query judgment, rank the cases of the same split's candidate pool and submit the top 7: `prediction.json` = `{query id: [7 unique ids]}`, in `submission.zip`.

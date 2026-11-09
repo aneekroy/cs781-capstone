@@ -8,7 +8,7 @@
 > - F5_densedapt_adalora 0.737
 > - F4_densedapt_rslora 0.428 (collapsed at r=16; retuned to r=64, α=16)
 >
-> **Test leaderboard scores:** TBD (fill in from Codabench).
+> **Test scores:** F3 LoRA **0.7507** (best), E1 ensemble 0.7440, F5 AdaLoRA 0.7322, B0 TF-IDF 0.6686, K1 gqa KD 0.6662, K2 hybrid KD 0.6368, F2 0.6196 (aggregated 0.6202), F1 LoRMA 0.6083 (aggregated 0.6208), F8 gqa 0.5231, F7 enc-dec 0.5182, F4 rsLoRA 0.4641.
 
 
 **The task.** Given a Supreme Court judgment with its final decision removed, predict whether the appeal was accepted (1) or rejected (0). The data is ILDC (about 34k judgments), in `Phase_4_CJPE/Train/{train,dev}.json` and `Test/test.json`.
