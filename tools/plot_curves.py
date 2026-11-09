@@ -24,7 +24,7 @@ from pathlib import Path
 
 DEFAULTS = {
     "p1": ["dense_gpt_full_*", "gqa_local_full_*", "recurrent_hybrid_full_*", "encoder_decoder_full_*"],
-    "dapt": ["dense_clm", "gqa_clm", "hybrid_clm", "encdec_mlm"],
+    "dapt": ["dense_clm|denselm_clm", "gqa_clm", "hybrid_clm", "encdec_mlm"],   # a|b = first that exists
     "p2": ["X1_denseorig_lorma", "X24_dense_coarse", "A3_gqa_clm_lora", "A2_encdec_mlm_full", "X9_hybrid2_nokd"],
     "p3": ["T_lorma", "P1_dense_lorma_ctx", "P2_dense_lorma_sent", "T_full", "T_prompt"],
     "p4": ["F3_densedapt_lora", "F5_densedapt_adalora", "F1_densedapt_lorma", "F4_densedapt_rslora"],
@@ -100,7 +100,7 @@ def plot_all(args):
 
     def save(fig, name, caption):
         fig.tight_layout()
-        fig.savefig(out / f"{name}.pdf")
+        fig.savefig(out / f"{name}.pdf", bbox_inches="tight")
         plt.close(fig)
         figures.append((name, caption))
         print("wrote", out / f"{name}.pdf")
@@ -108,32 +108,33 @@ def plot_all(args):
     # Phase 1
     s = phase1(project, args.p1, missing)
     if s:
-        fig, (a, b) = plt.subplots(1, 2, figsize=(7, 2.4))
+        fig, (a, b) = plt.subplots(1, 2, figsize=(8.2, 2.4))
         for name, tok, tr, val in s:
             a.plot(tok, tr, lw=0.8, label=name)
             if val:
                 b.plot(*zip(*val), marker=".", ms=3, lw=0.8, label=name)
         a.set(xlabel="training tokens (M)", ylabel="train loss (50-step mean)", title="Phase 1: training loss")
         b.set(xlabel="training tokens (M)", ylabel="validation loss", title="Phase 1: validation loss")
-        a.legend(); b.legend()
+        b.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0)
         save(fig, "phase1_curves", "Phase-1 language-model training and validation loss against training tokens.")
 
     # DAPT
     rows_by = {}
-    for name in args.dapt:
-        p = project / "runsP2" / "adapt" / name / "adapt_metrics.jsonl"
-        if p.exists():
-            rows_by[name] = read_jsonl(p)
+    for spec_name in args.dapt:
+        options = [project / "runsP2" / "adapt" / n / "adapt_metrics.jsonl" for n in spec_name.split("|")]
+        p = next((o for o in options if o.exists()), None)
+        if p is not None:
+            rows_by[p.parent.name] = read_jsonl(p)
         else:
-            missing.append(str(p.relative_to(project)))
+            missing.append(" or ".join(str(o.relative_to(project)) for o in options))
     if rows_by:
-        fig, ax = plt.subplots(figsize=(3.6, 2.4))
+        fig, ax = plt.subplots(figsize=(4.8, 2.4))
         for name, rows in rows_by.items():
             v = [(r["step"], r["val_loss"]) for r in rows if "val_loss" in r]
             if v:
                 ax.plot(*zip(*v), marker=".", ms=3, lw=0.8, label=name)
         ax.set(xlabel="step", ylabel="validation loss", title="DAPT (643M tokens)")
-        ax.legend()
+        ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0)
         save(fig, "dapt_curves", "Continued domain pretraining: validation loss per backbone.")
 
     # Phases 2-7: metric (and loss) per epoch / evaluation
@@ -157,7 +158,7 @@ def plot_all(args):
             missing.append(str(p.relative_to(project)))
         if not found:
             continue
-        fig, (a, b) = plt.subplots(1, 2, figsize=(7, 2.4))
+        fig, (a, b) = plt.subplots(1, 2, figsize=(8.2, 2.4))
         for i, (run, hs) in enumerate(found.items()):
             color = f"C{i}"
             for j, h in enumerate(hs):                     # one line per fold; only the first carries a label
@@ -171,7 +172,7 @@ def plot_all(args):
                     b.plot(*zip(*ms), color=color, marker=".", ms=3, lw=0.8, alpha=0.9 if j == 0 else 0.45, label=lab)
         a.set(xlabel=x_key, ylabel=loss_key.replace("_", " "), title=title.split(":")[0] + ": training loss")
         b.set(xlabel=x_key, ylabel=metric_key.replace("_", " "), title=title)
-        b.legend()
+        b.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0)
         n = key[1]
         save(fig, f"phase{n}_curves", f"{title.split(':')[0]}: training loss and {title.split(': ')[1]} per {x_key}"
              + (" (one line per cross-validation fold)." if kind == "cv" else "."))
