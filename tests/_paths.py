@@ -6,8 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def phase1_root():
-    candidates = [os.environ.get("CS781_PROJECT"), ROOT, ROOT.parent / "cs781_phase1",
-                  "$HOME/cs781_phase1"]
+    candidates = [os.environ.get("CS781_PROJECT"), ROOT, ROOT.parent / "cs781_phase1", Path.home() / "cs781_phase1"]
     for candidate in candidates:
         if candidate and (Path(candidate) / "phase1" / "models.py").is_file():
             return Path(candidate)

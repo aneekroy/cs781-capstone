@@ -1,6 +1,6 @@
 """Corpus statistics for Section 3.2 of the report, from the official data only.
 
-    python tools/data_stats.py --cache $HOME/cs781_cache --out data
+    python tools/data_stats.py --cache $CACHE --out data
 
 Reads $CACHE/raw/Phase_N_* through each phase's own loader (so de-duplication and test-copy removal
 match the experiments) and writes:

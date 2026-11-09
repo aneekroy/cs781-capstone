@@ -8,7 +8,7 @@ Token used (first match wins; the token itself is never printed):
 The machine-wide ~/.cache/huggingface/token is deliberately NOT used: on a shared login it
 may belong to someone else, which gives exactly "not in the authorized list" (403).
 
-    python -m phase2.fetch --output $HOME/cs781_cache/raw            # download
+    python -m phase2.fetch --output $CACHE/raw            # download
     python -m phase2.fetch --output ... --check-only                             # only test access
 """
 import argparse

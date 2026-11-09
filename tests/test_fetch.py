@@ -89,7 +89,7 @@ def test_invalid_token(tmp_path, monkeypatch):
 
 
 def test_check_only_and_full_download(tmp_path, monkeypatch, capsys):
-    info = {"name": "aneek", "auth": {"accessToken": {"role": "read"}}}
+    info = {"name": "student", "auth": {"accessToken": {"role": "read"}}}
     calls = patch_hub(monkeypatch, FakeApi(info), written=F.EXPECTED)
     F.fetch(tmp_path, tmp_path / "token", check_only=True)
     assert calls["snapshot"] == 0

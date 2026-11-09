@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # CS781 Phase 2 launcher for your 2x RTX 3090 server.
 #
-# Copy phase2/ (and this script) into $HOME/cs781_phase1 next to phase1/, then:
+# Copy phase2/ (and this script) into $PROJECT next to phase1/ (or run from this repository), then:
 #   bash run_phase2.sh access   # check which HF account your token is and whether it can read the dataset
 #   bash run_phase2.sh fetch    # download Phase_2_LNER (asks once for a token; --reset-token to change it)
 #   bash run_phase2.sh check    # list checkpoints, verify one shared tokenizer, data stats + alignment ceiling

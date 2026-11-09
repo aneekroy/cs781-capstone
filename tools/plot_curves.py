@@ -1,6 +1,6 @@
 """Training curves for the report, read from the logs every phase already writes.
 
-    python tools/plot_curves.py --project $HOME/cs781_phase1 --out curves
+    python tools/plot_curves.py --project $PROJECT --out curves
 
 Sources (nothing is retrained):
   Phase 1   runs/<run>/metrics.jsonl          train_loss every step, validation_loss every eval

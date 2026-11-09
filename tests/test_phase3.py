@@ -1,7 +1,7 @@
 """CPU tests for Phase 3 on synthetic data + tiny random Phase-1 checkpoints:
     python -m pytest -q tests/test_phase3.py
 """
-import argparse, itertools, json, random, subprocess, sys
+import argparse, itertools, json, os, random, subprocess, sys
 from pathlib import Path
 
 import numpy as np
@@ -294,26 +294,25 @@ def test_init_from_phase2_model(tmp_path):
     assert json.loads((tmp_path / "R_p2" / "cv_summary.json").read_text())["protocol"] == "dev"
 
 
-REAL = Path("__unset__")
-REAL_FILES = {"Train/CL_train.json": "689fcdef-CL_train.json", "Train/CL_dev.json": "442a4afa-CL_dev.json",
-              "Train/IT_train.json": "7ba273ce-IT_train.json", "Train/IT_dev.json": "18e10741-IT_dev.json",
-              "Train/label_vocab.json": "05574c1a-label_vocab.json", "Test/CL_test.json": "4a1189fd-CL_test.json",
-              "Test/IT_test.json": "1e9258bd-IT_test.json"}
+# Optional check on the official files: CS781_P3_DATA=$CACHE/raw/Phase_3_RR python -m pytest tests/test_phase3.py
+REAL = Path(os.environ.get("CS781_P3_DATA", "__unset__"))
+REAL_FILES = ["Train/CL_train.json", "Train/CL_dev.json", "Train/IT_train.json", "Train/IT_dev.json",
+              "Train/label_vocab.json", "Test/CL_test.json", "Test/IT_test.json"]
 
 
-@pytest.mark.skipif(not (REAL / "689fcdef-CL_train.json").exists(), reason="real Phase-3 files not attached")
+@pytest.mark.skipif(not (REAL / "Train" / "CL_train.json").exists(), reason="set CS781_P3_DATA to the official Phase_3_RR folder")
 def test_real_files_and_official_scorer(tmp_path):
     import shutil
     data = tmp_path / "Phase_3_RR"
-    for dst, src in REAL_FILES.items():
-        (data / dst).parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy(REAL / src, data / dst)
+    for rel in REAL_FILES:
+        (data / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(REAL / rel, data / rel)
     labels = load_vocab(data / "Train" / "label_vocab.json")
     for split in ("train", "dev", "test"):
         load_split(data, split, labels if split != "test" else None)
     r = run("-m", "phase3.run", "truth", "--data", str(data), "--output", str(tmp_path / "truth"))
     ours = float(r.stdout.split("(our scorer):")[1].split()[0])
-    evaluator = REAL / "67d9f0c0-attachment.txt"
+    evaluator = ROOT / "phase3" / "evaluate_phase3.py"           # the official scorer, unchanged
     shutil.copy(evaluator, tmp_path / "evaluate_phase3.py")
     t = tmp_path / "truth"
     off = run(str(tmp_path / "evaluate_phase3.py"), "--truth-cl", str(t / "cl_dev_truth.json"), "--truth-it",

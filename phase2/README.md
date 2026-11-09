@@ -17,7 +17,7 @@
 > - Failures: X20 O-penalty 0.310; X26 silver 0.611
 
 
-`phase2/` sits next to `phase1/` in `$HOME/cs781_phase1` and loads Phase-1
+`phase2/` sits next to `phase1/` in `$PROJECT` (default `$HOME/cs781_phase1`) and loads Phase-1
 checkpoints directly (run-1 `best.pt` files and the run-2 stage checkpoints use the same
 `{"model", "resolved"}` format). Only `torch`, `tokenizers` and `numpy` are needed — no
 pretrained weights, no peft/transformers.
@@ -40,7 +40,7 @@ run_phase2.sh   launcher with your checkpoint paths (bash run_phase2.sh with no 
 ## Install
 
 ```bash
-cd $HOME/cs781_phase1
+cd $PROJECT
 unzip cs781_phase2.zip            # adds phase2/, tests/, run_phase2.sh, README_phase2.md
 python -m pytest -q tests/                    # 38 tests, CPU, ~1 min (builds a fixture in /tmp/fx_test)
 ```
@@ -63,7 +63,7 @@ can be ensembled. `run_phase2.sh check` re-verifies the hashes on the server.
 
 ```bash
 bash run_phase2.sh access    # which HF account the token is, and whether it can read the gated dataset
-bash run_phase2.sh fetch     # Phase_2_LNER -> $HOME/cs781_cache/raw/Phase_2_LNER
+bash run_phase2.sh fetch     # Phase_2_LNER -> $CACHE/raw/Phase_2_LNER
 bash run_phase2.sh check     # checkpoints, tokenizer identity, label table, alignment ceiling
 bash run_phase2.sh round1    # E2 enc-dec full FT  ||  E1 dense_lm_v2 + LoRMA+ (causal)
 bash run_phase2.sh round2    # E3 gqa + LoRA       ||  E4 hybrid KD student
