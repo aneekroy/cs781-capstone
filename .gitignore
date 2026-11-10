@@ -3,8 +3,6 @@ __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
 # data, checkpoints and run outputs live outside the repository ($CACHE, $PROJECT)
-runs*/
-*.pt
 *.npz
 *.bin
 *.safetensors
