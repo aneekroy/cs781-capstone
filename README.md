@@ -354,8 +354,8 @@ This writes `curves/phase*_curves.pdf`, `curves/dapt_curves.pdf` and `curves/app
 
 ## Use of AI assistants
 
-- The Phase-1 base pipeline was first generated with ChatGPT.
-- Code for Phases 2–7, the debugging, the experiment design and the documentation were developed with Claude (Anthropic) as a coding assistant.
+- The Phase-1 base pipeline was first created by me over the harness starter code in code package.
+- Code for Phases 2–7 were deliberated and added by me while the debugging, the experiment design and the documentation were developed with Claude (Anthropic) as a coding assistant.
 - All experiments were run, and all results produced, on our own server.
 - The report's LLM declaration gives the details.
 
