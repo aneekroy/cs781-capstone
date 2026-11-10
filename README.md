@@ -73,7 +73,7 @@ Every launcher reads the same variables, with defaults for the original server:
 |---|---|---|
 | `PROJECT` | Phase-1 project: `runs/` holds the Phase-1 checkpoints; `runsP2/` … `runsP7/` receive the outputs | `$HOME/cs781_phase1` |
 | `CACHE` | data cache; official data is fetched to `$CACHE/raw/Phase_N_*` | `$HOME/cs781_cache` |
-| `GPU_A`, `GPU_B` | the two GPUs used for paired runs (each run uses one 24 GB GPU; we used RTX 3090s) | `0`, `1` |
+| `GPU_A` | the one GPU used for paired runs (each run uses one 24 GB GPU; we used RTX 3090) | `0` |
 
 Data is fetched from the gated official Hugging Face dataset with **your own token**, stored at `$CACHE/huggingface/token` and never printed. For example: `bash phase1/fetch_data.sh` (Phase-1 corpus) or `bash phase3/run_phase3.sh fetch`.
 
@@ -354,8 +354,8 @@ This writes `curves/phase*_curves.pdf`, `curves/dapt_curves.pdf` and `curves/app
 
 ## Use of AI assistants
 
-- The Phase-1 base pipeline was first generated with ChatGPT.
-- Code for Phases 2–7, the debugging, the experiment design and the documentation were developed with Claude (Anthropic) as a coding assistant.
+- The Phase-1 base pipeline was first created by me over the harness starter code in code package.
+- Code for Phases 2–7 were deliberated and added by me while the debugging, the experiment design and the documentation were developed with Claude (Anthropic) as a coding assistant.
 - All experiments were run, and all results produced, on our own server.
 - The report's LLM declaration gives the details.
 
