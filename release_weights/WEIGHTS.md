@@ -1,5 +1,7 @@
 # CS781 capstone: model weights
 
+Google Drive link : https[ ]
+
 Checkpoints of the submitted systems, to be used with the code in this repository. Load a downstream checkpoint together with the base it **needs**; place each file at its original path under `$PROJECT` (rename `__` back to `/`) and the launchers find it.
 
 | asset | original path | size | needs | sha256 |
