@@ -9,7 +9,7 @@ Every later phase starts from the checkpoints trained here, so this phase also f
 
 ## Provenance of this code
 
-The first version of the Phase-1 pipeline was generated with ChatGPT. It was then reviewed, debugged and extended with Claude:
+The first version of the Phase-1 pipeline was created from scratch from the harness code and edited by chatgpt. It was then reviewed, debugged and extended with Claude:
 - precision handling (bf16 on Ampere, fp16 elsewhere);
 - exact-state resume;
 - KV/recurrent caches for generation;
